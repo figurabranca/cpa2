@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciamento CPA</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f5f3;
+      --surface: #ffffff;
+      --surface2: #f0efea;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --text: #1a1a18;
+      --text2: #6b6b67;
+      --text3: #9b9b97;
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-bg: #E1F5EE;
+      --green-text: #0F6E56;
+      --red: #E24B4A;
+      --red-bg: #FCEBEB;
+      --red-text: #A32D2D;
+      --blue: #378ADD;
+      --blue-bg: #E6F1FB;
+      --blue-text: #185FA5;
+      --amber: #BA7517;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a18;
+        --surface: #242422;
+        --surface2: #2e2e2b;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.22);
+        --text: #f0efe8;
+        --text2: #9b9b97;
+        --text3: #6b6b67;
+        --green-bg: #04342C;
+        --green-text: #9FE1CB;
+        --red-bg: #501313;
+        --red-text: #F7C1C1;
+        --blue-bg: #042C53;
+        --blue-text: #B5D4F4;
+        --amber-bg: #412402;
+        --amber-text: #FAC775;
+      }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+    .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo { width: 36px; height: 36px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+    .header-title { font-size: 15px; font-weight: 500; }
+    .header-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .tabs { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 24px; display: flex; gap: 2px; overflow-x: auto; }
+    .tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text2); white-space: nowrap; transition: color .15s; user-select: none; }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
+    .tab:hover:not(.active) { color: var(--text); }
+    .content { padding: 20px 24px; max-width: 1100px; margin: 0 auto; }
+    .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .metric { background: var(--surface2); border-radius: var(--radius); padding: 14px 16px; }
+    .metric-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+    .metric-val { font-size: 20px; font-weight: 500; }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .blue { color: var(--blue); }
+    .amber { color: var(--amber); }
+    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; }
+    .card-head { padding: 14px 18px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .card-head h3 { font-size: 14px; font-weight: 500; }
+    .card-body { padding: 16px 18px; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .form-group label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 8px 10px; font-size: 13px;
+      border: 0.5px solid var(--border2); border-radius: var(--radius);
+      background: var(--surface); color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(29,158,117,.15); }
+    .btn { padding: 8px 14px; border-radius: var(--radius); font-size: 13px; cursor: pointer; border: 0.5px solid var(--border2); background: var(--surface); color: var(--text); transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:hover { background: var(--surface2); }
+    .btn-primary { background: var(--green); border-color: var(--green); color: #fff; }
+    .btn-primary:hover { background: var(--green-dark); border-color: var(--green-dark); }
+    .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
+    .btn-danger:hover { background: var(--red-bg); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+    td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+    .badge-green { background: var(--green-bg); color: var(--green-text); }
+    .badge-red { background: var(--red-bg); color: var(--red-text); }
+    .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .empty { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
+    .hidden { display: none !important; }
+    .mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .mini-metric { background: var(--surface2); border-radius: var(--radius); padding: 10px 12px; }
+    .mini-label { font-size: 10px; color: var(--text2); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
+    .mini-val { font-size: 16px; font-weight: 500; }
+    #toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 9999; }
+    .inline-input { border: none; background: transparent; width: 100%; font-size: 13px; color: var(--text); text-align: right; padding: 3px 4px; border-radius: 4px; }
+    .inline-input:focus { outline: none; background: var(--surface2); }
+    .profit-pos { color: var(--green); font-weight: 500; }
+    .profit-neg { color: var(--red); font-weight: 500; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .section-title { font-size: 15px; font-weight: 500; }
+    .section-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .overflow-x { overflow-x: auto; }
+    @media (max-width: 600px) {
+      .content { padding: 14px 14px; }
+      .header { padding: 12px 14px; }
+      .tabs { padding: 0 14px; }
+      .card-head, .card-body { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">CPA</div>
+    <div>
+      <div class="header-title">Gerenciamento CPA</div>
+      <div class="header-sub">iGaming · Controle de Contas e Resultados</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="current-date" style="font-size:12px;color:var(--text2)"></span>
+    <button class="btn btn-sm" onclick="exportData()"><i class="ti ti-download"></i> Exportar</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('painel',this)">Painel Geral</div>
+  <div class="tab" onclick="switchTab('plataformas',this)">Plataformas</div>
+  <div class="tab" onclick="switchTab('diario',this)">Acompanhamento Diário</div>
+  <div class="tab" onclick="switchTab('gastos',this)">Gastos</div>
+</div>
+
+<div class="content">
+
+  <!-- PAINEL GERAL -->
+  <div id="tab-painel">
+    <div class="panel-grid" id="main-metrics"></div>
+    <div class="card">
+      <div class="card-head"><h3>Resumo por Plataforma</h3></div>
+      <div class="card-body" style="padding:0">
+        <div class="overflow-x">
+          <table>
+            <thead><tr>
+              <th>Plataforma</th><th>Contas</th>
+              <th>Total Depósito</th><th>Total Saque</th>
+              <th>BAU</th><th>Gastos</th><th>Resultado</th><th>Status</th>
+            </tr></thead>
+            <tbody id="summary-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLATAFORMAS -->
+  <div id="tab-plataformas" class="hidden">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Plataformas CPA</div>
+        <div class="section-sub">Gerencie cada plataforma e suas contas</div>
+      </div>
+      <button class="btn btn-primary" onclick="showAddPlatform()"><i class="ti ti-plus"></i> Nova Plataforma</button>
+    </div>
+
+    <div class="card hidden" id="add-plat-form">
+      <div class="card-head">
+        <h3>Adicionar Plataforma</h3>
+        <button class="btn btn-sm" onclick="document.getElementById('add-plat-form').classList.add('hidden')"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group"><label>Nome da Plataforma</label><input id="f-nome" placeholder="ex: 888, Bet365, Sportingbet" /></div>
+          <div class="form-group"><label>Depósito por Conta (R$)</label><input id="f-dep" type="number" placeholder="500" /></div>
+          <div class="form-group"><label>Capital Inicial (R$)</label><input id="f-cap" type="number" placeholder="0" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="addPlatform()"><i class="ti ti-check"></i> Adicionar</button>
+      </div>
+    </div>
+
+    <div id="platforms-list"></div>
+  </div>
+
+  <!-- DIÁRIO -->
+  <div id="tab-diario" class="hidden">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Acompanhamento Diário</div>
+        <div class="section-sub">Registre lucro bruto e resultado por dia</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="form-group" style="margin:0">
+          <select id="mes-sel" onchange="renderDaily()" style="font-size:12px;padding:6px 10px"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <select id="ano-sel" onchange="renderDaily()" style="font-size:12px;padding:6px 10px"></select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Registro Mensal</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span id="daily-total-bruto" style="font-size:13px;color:var(--text2)"></span>
+          <span id="daily-total-lucro" style="font-size:13px;font-weight:500"></span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="overflow-x">
+          <table>
+            <thead><tr>
+              <th style="width:50px">Dia</th>
+              <th style="text-align:right">Capital (R$)</th>
+              <th style="text-align:right">Lucro Bruto (R$)</th>
+              <th style="text-align:right">% sobre Capital</th>
+              <th style="text-align:right">Lucro Líquido (R$)</th>
+            </tr></thead>
+            <tbody id="daily-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GASTOS -->
+  <div id="tab-gastos" class="hidden">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Controle de Gastos</div>
+        <div class="section-sub">SMS, Proxy, VPN e outros custos operacionais</div>
+      </div>
+      <button class="btn btn-primary" onclick="showAddGasto()"><i class="ti ti-plus"></i> Registrar Gasto</button>
+    </div>
+
+    <div class="card hidden" id="add-gasto-form">
+      <div class="card-head">
+        <h3>Novo Gasto</h3>
+        <button class="btn btn-sm" onclick="document.getElementById('add-gasto-form').classList.add('hidden')"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group"><label>Categoria</label>
+            <select id="g-cat">
+              <option>SMS</option><option>Proxy</option><option>VPN</option>
+              <option>Conta Virtual</option><option>Outros</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Descrição</label><input id="g-desc" placeholder="Detalhe o gasto" /></div>
+          <div class="form-group"><label>Valor (R$)</label><input id="g-val" type="number" step="0.01" placeholder="0,00" /></div>
+          <div class="form-group"><label>Data</label><input id="g-data" type="date" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="addGasto()"><i class="ti ti-check"></i> Registrar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Histórico de Gastos</h3>
+        <span id="total-gastos-label" style="font-size:13px;font-weight:500;color:var(--red)"></span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="overflow-x">
+          <table>
+            <thead><tr>
+              <th>Data</th><th>Categoria</th><th>Descrição</th>
+              <th style="text-align:right">Valor</th><th></th>
+            </tr></thead>
+            <tbody id="gastos-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let state = { platforms: [], gastos: [], daily: {} };
+  try { const s = localStorage.getItem('cpa_v2'); if (s) state = JSON.parse(s); } catch(e) {}
+
+  function save() {
+    try { localStorage.setItem('cpa_v2', JSON.stringify(state)); } catch(e) {}
+  }
+
+  // ── Utils ──────────────────────────────────────────────────────────────────
+  function fmt(n) {
+    const v = parseFloat(n);
+    if (isNaN(v)) return 'R$ 0,00';
+    return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function fmtPct(n) {
+    if (isNaN(n) || !isFinite(n)) return '–';
+    return n.toFixed(1).replace('.', ',') + '%';
+  }
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.opacity = 1;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.style.opacity = 0, 2400);
+  }
+
+  // ── Date setup ────────────────────────────────────────────────────────────
+  document.getElementById('current-date').textContent =
+    new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mesSel = document.getElementById('mes-sel');
+  const anoSel = document.getElementById('ano-sel');
+  meses.forEach((m, i) => {
+    const o = document.createElement('option'); o.value = i + 1; o.textContent = m; mesSel.appendChild(o);
+  });
+  mesSel.value = new Date().getMonth() + 1;
+  [2024, 2025, 2026, 2027].forEach(y => {
+    const o = document.createElement('option'); o.value = y; o.textContent = y; anoSel.appendChild(o);
+  });
+  anoSel.value = new Date().getFullYear();
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+    document.getElementById('tab-' + name).classList.remove('hidden');
+    if (name === 'painel')      renderPainel();
+    if (name === 'plataformas') renderPlatforms();
+    if (name === 'diario')      renderDaily();
+    if (name === 'gastos')      renderGastos();
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  function platformStats(p) {
+    const accounts = p.accounts || [];
+    const totalDep    = accounts.reduce((s, a) => s + (parseFloat(a.deposito) || 0), 0);
+    const totalSaque  = accounts.reduce((s, a) => s + (parseFloat(a.saque)    || 0), 0);
+    const totalBau    = accounts.reduce((s, a) => s + (parseFloat(a.bau)      || 0), 0);
+    const totalLucro  = accounts.reduce((s, a) => s + (parseFloat(a.lucro)    || 0), 0);
+    const totalGastos = (p.gastos || []).reduce((s, g) => s + (parseFloat(g.val) || 0), 0);
+    const resultado   = totalSaque - totalDep + totalBau + totalLucro - totalGastos;
+    return { totalDep, totalSaque, totalBau, totalLucro, totalGastos, resultado };
+  }
+
+  function allStats() {
+    const gTotal = state.gastos.reduce((s, g) => s + (parseFloat(g.val) || 0), 0);
+    let dep = 0, saq = 0, bau = 0, luc = 0, gastos = gTotal, contas = 0;
+    state.platforms.forEach(p => {
+      const st = platformStats(p);
+      dep    += st.totalDep;
+      saq    += st.totalSaque;
+      bau    += st.totalBau;
+      luc    += st.totalLucro;
+      gastos += st.totalGastos;
+      contas += (p.accounts || []).length;
+    });
+    const resultado = saq - dep + bau + luc - gastos;
+    return { dep, saq, bau, luc, gastos, resultado, contas };
+  }
+
+  // ── Painel ────────────────────────────────────────────────────────────────
+  function renderPainel() {
+    const s = allStats();
+    document.getElementById('main-metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">Total Depositado</div><div class="metric-val blue">${fmt(s.dep)}</div></div>
+      <div class="metric"><div class="metric-label">Total Saque</div><div class="metric-val green">${fmt(s.saq)}</div></div>
+      <div class="metric"><div class="metric-label">BAU Total</div><div class="metric-val amber">${fmt(s.bau)}</div></div>
+      <div class="metric"><div class="metric-label">Gastos Totais</div><div class="metric-val red">${fmt(s.gastos)}</div></div>
+      <div class="metric"><div class="metric-label">Resultado Líquido</div><div class="metric-val ${s.resultado >= 0 ? 'green' : 'red'}">${fmt(s.resultado)}</div></div>
+      <div class="metric"><div class="metric-label">Contas Criadas</div><div class="metric-val">${s.contas}</div></div>
+      <div class="metric"><div class="metric-label">Plataformas</div><div class="metric-val">${state.platforms.length}</div></div>
+    `;
+    const tb = document.getElementById('summary-table');
+    if (!state.platforms.length) {
+      tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma plataforma cadastrada ainda.</td></tr>'; return;
+    }
+    tb.innerHTML = state.platforms.map(p => {
+      const st = platformStats(p);
+      return `<tr>
+        <td style="font-weight:500">${escHtml(p.nome)}</td>
+        <td>${(p.accounts || []).length}</td>
+        <td>${fmt(st.totalDep)}</td>
+        <td>${fmt(st.totalSaque)}</td>
+        <td>${fmt(st.totalBau)}</td>
+        <td>${fmt(st.totalGastos)}</td>
+        <td class="${st.resultado >= 0 ? 'profit-pos' : 'profit-neg'}">${fmt(st.resultado)}</td>
+        <td><span class="badge ${st.resultado >= 0 ? 'badge-green' : 'badge-red'}">${st.resultado >= 0 ? 'Positivo' : 'Negativo'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Plataformas ───────────────────────────────────────────────────────────
+  function showAddPlatform() {
+    document.getElementById('add-plat-form').classList.toggle('hidden');
+  }
+
+  function addPlatform() {
+    const nome = document.getElementById('f-nome').value.trim();
+    const dep  = parseFloat(document.getElementById('f-dep').value) || 500;
+    const cap  = parseFloat(document.getElementById('f-cap').value) || 0;
+    if (!nome) { toast('Informe o nome da plataforma'); return; }
+    state.platforms.push({ id: Date.now(), nome, depPadrao: dep, capital: cap, accounts: [], gastos: [] });
+    save();
+    document.getElementById('add-plat-form').classList.add('hidden');
+    document.getElementById('f-nome').value = '';
+    document.getElementById('f-dep').value  = '';
+    document.getElementById('f-cap').value  = '';
+    renderPlatforms(); toast('Plataforma adicionada!');
+  }
+
+  function removePlatform(id) {
+    if (!confirm('Remover esta plataforma e todas as suas contas?')) return;
+    state.platforms = state.platforms.filter(p => p.id !== id);
+    save(); renderPlatforms(); toast('Plataforma removida');
+  }
+
+  function addAccount(platId) {
+    const p = state.platforms.find(p => p.id === platId);
+    if (!p) return;
+    p.accounts.push({ ciclo: '', deposito: p.depPadrao || 500, saque: 0, bau: 0, lucro: 0, status: 'ativa' });
+    save(); renderPlatforms(); toast('Conta adicionada');
+  }
+
+  function updateAcc(platId, idx, field, val) {
+    const p = state.platforms.find(p => p.id === platId);
+    if (!p || !p.accounts[idx]) return;
+    const numFields = ['deposito', 'saque', 'bau', 'lucro'];
+    p.accounts[idx][field] = numFields.includes(field) ? (parseFloat(val) || 0) : val;
+    save(); renderPainel();
+  }
+
+  function removeAcc(platId, idx) {
+    const p = state.platforms.find(p => p.id === platId);
+    if (!p) return;
+    p.accounts.splice(idx, 1); save(); renderPlatforms(); toast('Conta removida');
+  }
+
+  function renderPlatforms() {
+    const el = document.getElementById('platforms-list');
+    if (!state.platforms.length) {
+      el.innerHTML = '<div class="card"><div class="card-body empty">Nenhuma plataforma ainda. Clique em "Nova Plataforma" para começar.</div></div>'; return;
+    }
+    el.innerHTML = state.platforms.map(p => {
+      const st = platformStats(p);
+      const accs = p.accounts || [];
+      const rows = accs.map((a, i) => `
+        <tr>
+          <td style="color:var(--text2);font-size:12px">${i + 1}</td>
+          <td><input class="inline-input" style="text-align:left" value="${escHtml(a.ciclo || '')}" placeholder="Ciclo / ID"
+            onchange="updateAcc(${p.id},${i},'ciclo',this.value)" /></td>
+          <td><input class="inline-input" type="number" value="${a.deposito || ''}" placeholder="0"
+            onchange="updateAcc(${p.id},${i},'deposito',this.value)" /></td>
+          <td><input class="inline-input" type="number" value="${a.saque || ''}" placeholder="0"
+            onchange="updateAcc(${p.id},${i},'saque',this.value)" /></td>
+          <td><input class="inline-input" type="number" value="${a.bau || ''}" placeholder="0"
+            onchange="updateAcc(${p.id},${i},'bau',this.value)" /></td>
+          <td><input class="inline-input" type="number" value="${a.lucro || ''}" placeholder="0"
+            onchange="updateAcc(${p.id},${i},'lucro',this.value)" /></td>
+          <td>
+            <select style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text)"
+              onchange="updateAcc(${p.id},${i},'status',this.value)">
+              <option value="ativa"     ${a.status==='ativa'    ?'selected':''}>Ativa</option>
+              <option value="concluida" ${a.status==='concluida'?'selected':''}>Concluída</option>
+              <option value="perdida"   ${a.status==='perdida'  ?'selected':''}>Perdida</option>
+            </select>
+          </td>
+          <td><button class="btn btn-danger btn-sm" onclick="removeAcc(${p.id},${i})"><i class="ti ti-trash"></i></button></td>
+        </tr>`).join('');
+
+      return `
+      <div class="card">
+        <div class="card-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="logo" style="width:30px;height:30px;font-size:12px;border-radius:6px">${escHtml(p.nome.charAt(0))}</div>
+            <div>
+              <div style="font-weight:500;font-size:14px">${escHtml(p.nome)}</div>
+              <div style="font-size:11px;color:var(--text2)">Depósito padrão: ${fmt(p.depPadrao)} · Capital: ${fmt(p.capital)}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-sm" onclick="addAccount(${p.id})"><i class="ti ti-plus"></i> Conta</button>
+            <button class="btn btn-danger btn-sm" onclick="removePlatform(${p.id})"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mini-grid">
+            <div class="mini-metric"><div class="mini-label">Depósito</div><div class="mini-val blue">${fmt(st.totalDep)}</div></div>
+            <div class="mini-metric"><div class="mini-label">Saque</div><div class="mini-val green">${fmt(st.totalSaque)}</div></div>
+            <div class="mini-metric"><div class="mini-label">BAU</div><div class="mini-val amber">${fmt(st.totalBau)}</div></div>
+            <div class="mini-metric"><div class="mini-label">Resultado</div><div class="mini-val ${st.resultado>=0?'green':'red'}">${fmt(st.resultado)}</div></div>
+          </div>
+          ${accs.length ? `<div class="overflow-x"><table>
+            <thead><tr>
+              <th style="width:36px">#</th><th>Ciclo / ID</th>
+              <th style="text-align:right">Depósito</th>
+              <th style="text-align:right">Saque</th>
+              <th style="text-align:right">BAU</th>
+              <th style="text-align:right">Lucro Extra</th>
+              <th>Status</th><th></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>` : '<div class="empty" style="padding:20px">Nenhuma conta ainda. Clique em "+ Conta" para adicionar.</div>'}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Diário ────────────────────────────────────────────────────────────────
+  function renderDaily() {
+    const mes = parseInt(mesSel.value);
+    const ano = parseInt(anoSel.value);
+    const key = `${ano}-${mes}`;
+    if (!state.daily[key]) state.daily[key] = {};
+    const days = new Date(ano, mes, 0).getDate();
+    const { dep } = allStats();
+    const capital = dep || 0;
+
+    let totalBruto = 0, totalLucro = 0;
+    let rows = '';
+
+    for (let d = 1; d <= days; d++) {
+      const dk = `d${d}`;
+      if (!state.daily[key][dk]) state.daily[key][dk] = { capital: capital, bruto: 0 };
+      const row = state.daily[key][dk];
+      const pct   = row.capital > 0 ? (row.bruto / row.capital * 100) : 0;
+      totalBruto += row.bruto;
+      totalLucro += row.bruto;
+
+      rows += `<tr>
+        <td style="font-weight:500;color:var(--text2);font-size:12px">${d}</td>
+        <td><input class="inline-input" type="number" value="${row.capital || ''}" placeholder="0"
+          onchange="updateDaily('${key}','${dk}','capital',this.value)" /></td>
+        <td><input class="inline-input" type="number" value="${row.bruto || ''}" placeholder="0"
+          onchange="updateDaily('${key}','${dk}','bruto',this.value)" /></td>
+        <td style="text-align:right;color:${pct>0?'var(--green)':pct<0?'var(--red)':'var(--text2)'};font-weight:${pct!==0?'500':'400'}">
+          ${row.bruto !== 0 ? fmtPct(pct) : '–'}
+        </td>
+        <td style="text-align:right;color:${row.bruto>0?'var(--green)':row.bruto<0?'var(--red)':'var(--text2)'};font-weight:${row.bruto!==0?'500':'400'}">
+          ${row.bruto !== 0 ? fmt(row.bruto) : '–'}
+        </td>
+      </tr>`;
+    }
+
+    rows += `<tr style="background:var(--surface2)">
+      <td colspan="2" style="font-weight:500">Total ${meses[mes - 1]}</td>
+      <td style="text-align:right;font-weight:500">${fmt(totalBruto)}</td>
+      <td></td>
+      <td style="text-align:right;font-weight:500;color:${totalLucro>=0?'var(--green)':'var(--red)'}">${fmt(totalLucro)}</td>
+    </tr>`;
+
+    document.getElementById('daily-table').innerHTML = rows;
+    document.getElementById('daily-total-bruto').textContent = `Bruto: ${fmt(totalBruto)}`;
+    const lucroEl = document.getElementById('daily-total-lucro');
+    lucroEl.textContent = `Líquido: ${fmt(totalLucro)}`;
+    lucroEl.style.color = totalLucro >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  function updateDaily(key, dk, field, val) {
+    if (!state.daily[key]) state.daily[key] = {};
+    if (!state.daily[key][dk]) state.daily[key][dk] = { capital: 0, bruto: 0 };
+    state.daily[key][dk][field] = parseFloat(val) || 0;
+    save();
+    const mes = parseInt(mesSel.value), ano = parseInt(anoSel.value);
+    if (key === `${ano}-${mes}`) {
+      const days = new Date(ano, mes, 0).getDate();
+      let tb = 0;
+      for (let d = 1; d <= days; d++) {
+        const r = state.daily[key][`d${d}`] || { bruto: 0 };
+        tb += r.bruto;
+      }
+      document.getElementById('daily-total-bruto').textContent = `Bruto: ${fmt(tb)}`;
+      const lucroEl = document.getElementById('daily-total-lucro');
+      lucroEl.textContent = `Líquido: ${fmt(tb)}`;
+      lucroEl.style.color = tb >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+  }
+
+  // ── Gastos ────────────────────────────────────────────────────────────────
+  function showAddGasto() {
+    document.getElementById('add-gasto-form').classList.toggle('hidden');
+    document.getElementById('g-data').value = new Date().toISOString().slice(0, 10);
+  }
+
+  function addGasto() {
+    const cat  = document.getElementById('g-cat').value;
+    const desc = document.getElementById('g-desc').value.trim();
+    const val  = parseFloat(document.getElementById('g-val').value) || 0;
+    const data = document.getElementById('g-data').value;
+    if (!val) { toast('Informe o valor do gasto'); return; }
+    state.gastos.push({ id: Date.now(), cat, desc, val, data });
+    save();
+    document.getElementById('add-gasto-form').classList.add('hidden');
+    document.getElementById('g-desc').value = '';
+    document.getElementById('g-val').value  = '';
+    renderGastos(); toast('Gasto registrado!');
+  }
+
+  function removeGasto(id) {
+    state.gastos = state.gastos.filter(g => g.id !== id);
+    save(); renderGastos(); toast('Gasto removido');
+  }
+
+  function renderGastos() {
+    const total = state.gastos.reduce((s, g) => s + (parseFloat(g.val) || 0), 0);
+    document.getElementById('total-gastos-label').textContent = 'Total: ' + fmt(total);
+    const tb = document.getElementById('gastos-table');
+    if (!state.gastos.length) {
+      tb.innerHTML = '<tr><td colspan="5" class="empty">Nenhum gasto registrado ainda.</td></tr>'; return;
+    }
+    const catBadge = { SMS: 'badge-blue', Proxy: 'badge-amber', VPN: 'badge-green', 'Conta Virtual': 'badge-blue', Outros: 'badge-red' };
+    const sorted = [...state.gastos].sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+    tb.innerHTML = sorted.map(g => `<tr>
+      <td style="color:var(--text2);white-space:nowrap">${g.data ? new Date(g.data + 'T12:00').toLocaleDateString('pt-BR') : '–'}</td>
+      <td><span class="badge ${catBadge[g.cat] || 'badge-blue'}">${escHtml(g.cat)}</span></td>
+      <td>${escHtml(g.desc || '–')}</td>
+      <td style="text-align:right;font-weight:500;color:var(--red)">${fmt(g.val)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeGasto(${g.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('');
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────────
+  function exportData() {
+    const s = allStats();
+    const lines = [
+      '══════════════════════════════════════════',
+      '  GERENCIAMENTO CPA — RELATÓRIO EXPORTADO',
+      '══════════════════════════════════════════',
+      `Data: ${new Date().toLocaleDateString('pt-BR')}`,
+      '',
+      '[ RESUMO GERAL ]',
+      `  Depósito Total:   ${fmt(s.dep)}`,
+      `  Total Saque:      ${fmt(s.saq)}`,
+      `  BAU:              ${fmt(s.bau)}`,
+      `  Gastos Totais:    ${fmt(s.gastos)}`,
+      `  Resultado Líq.:   ${fmt(s.resultado)}`,
+      `  Contas Criadas:   ${s.contas}`,
+      `  Plataformas:      ${state.platforms.length}`,
+      '',
+      '[ PLATAFORMAS ]',
+      ...state.platforms.map(p => {
+        const st = platformStats(p);
+        return `  ${p.nome} | ${(p.accounts || []).length} contas | Dep ${fmt(st.totalDep)} | Saque ${fmt(st.totalSaque)} | Resultado ${fmt(st.resultado)}`;
+      }),
+      '',
+      '[ GASTOS ]',
+      ...state.gastos.map(g => `  ${g.data || '–'} | ${g.cat} | ${g.desc || '–'} | ${fmt(g.val)}`),
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `CPA_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    toast('Exportado com sucesso!');
+  }
+
+  // ── Security helper ───────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  renderPainel();
+</script>
+</body>
+</html>
